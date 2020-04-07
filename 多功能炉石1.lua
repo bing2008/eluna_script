@@ -235,7 +235,7 @@ local Stone={
 	GoHome=function(player)--穿越回去
 		player:CastSpell(player,8690,true)	
 		player:ResetSpellCooldown(8690, true)	
-		player:SendBroadcastMessage("已经穿越回来了")
+		player:SendBroadcastMessage("你回到家了。")
 	end,
 	
 	GoGMIsland=function(player)--新手装备
@@ -252,7 +252,7 @@ local Stone={
 				end
 	end,
 
-	GoHJE=function(player)
+	GoArena=function(player)
 		-- local v = {TP, "海加尔山营地",			1, 5156.93,		-1400.25,	1354.3,	0}-- 海加尔山营地
 		local v = {TP, "竞技场营地",			0, -13253.53,		183.5,	32,	1}-- 竞技场营地
 		local map,mapid,x,y,z,o=v[2],v[3],v[4], v[5], v[6],v[7] or 0
@@ -417,6 +417,15 @@ local Stone={
 	ResetSpell=function(player)
 		ResetPlayer(player, 0x2, "所有法术")
 	end,
+
+	Test  = function(player)
+		local msg = ".partybot add healer"
+		--player:Say(msg,1)
+		player:SendAddonMessage("prefix",msg,0,player,msg)
+
+		--SendWorldMessage(string.format("|cFFFF0000[系统]|r|cFFFFFF00%s|r",msg))
+		--player:SummonPlayer(player)
+	end,
 }
 
 local Menu={
@@ -425,7 +434,7 @@ local Menu={
 		--{FUNC, "记录|cFFF0F000←|r位置", 	Stone.SetHome,	GOSSIP_ICON_TAXI,          false,"是否记录当前|cFFF0F000位置|r ?"},
 		{MENU, "地图传送（1G）", 	TPMENU,			GOSSIP_ICON_TAXI},
 		--{FUNC, "购买新手装备", 		Stone.GoGMIsland,	GOSSIP_ICON_CHAT,		false,"是否传送到|cFFF0F000GM岛新手装备|r ?"},
-		{FUNC, "竞技场营地（测试）", 		Stone.GoHJE,	GOSSIP_ICON_TAXI,		false,"是否传送到|cFFF0F000竞技场营地|r ?"},
+		{FUNC, "竞技场营地（测试）", 		Stone.GoArena,	GOSSIP_ICON_TAXI,		false,"是否传送到|cFFF0F000竞技场营地|r ?"},
 		--{FUNC, "修理装备",	    Stone.RepairAll,GOSSIP_ICON_MONEY_BAG,	  false,"需要花费金币修理装备 ?"},
 		{FUNC, "在线银行", 		Stone.OpenBank,	GOSSIP_ICON_VENDOR},
 		{FUNC, "在线拍卖行", 	Stone.OpenAutionHouse,	GOSSIP_ICON_VENDOR},
@@ -458,7 +467,7 @@ local Menu={
 		{FUNC, "保存角色", 		Stone.SaveToDB,			GOSSIP_ICON_INTERACT_1},
 		{FUNC, "返回选择角色", 	Stone.Logout,			GOSSIP_ICON_INTERACT_1,	false,"返回选择角色界面 ?"},
 		{FUNC, "|cFF800000不保存角色|r",Stone.LogoutNosave,GOSSIP_ICON_INTERACT_1,false,"|cFFFF0000不保存角色，并返回选择角色界面 ?|r"},
-		
+		--{FUNC, "测试",			Stone.Test,				GOSSIP_ICON_CHAT,		false,"测试？?"},
 	},
 	
 	[TPMENU]={--传送菜单
@@ -634,7 +643,7 @@ local Menu={
 		{TP, "黑翼之巢（40人）T2", 229, 152.451, -474.881, 116.84, 0.001073},
 		{TP, "安其拉废墟（20人）T1", 1, -8409.82, 1499.06, 27.7179, 2.51868},
 		{TP, "安其拉神殿（40人）T2.5", 1, -8240.09, 1991.32, 129.072, 0.941603},
-		{TP, "纳克萨玛斯（40人）T3", 571, 3668.72, -1262.46, 243.622, 4.785},
+		{TP, "纳克萨玛斯（40人）T3", 533, 3005.87,-3435.01,293.882,4.785},
 		--{TP, "海加尔山之巅65级", 1, -8177.89, -4181.23, -167.552, 0.913338}, 
 		--{TP, "格鲁尔的巢穴65级", 530, 3530.06, 5104.08, 3.50861, 5.51117},
 		--{TP, "玛瑟里顿的巢穴70级", 530, -336.411, 3130.46, -102.928, 5.20322}, 
@@ -1063,7 +1072,7 @@ function Stone.SelectGossip(event, player, item, sender, intid, code, menu_id)
 	local rowid	=intid-menuid*0x100		--第几项
 
 	--设置菜单使用金额//todo:改成各自价格
-	local TP_FEE = 0--10000 --铜币
+	local TP_FEE = 0--10000 --单位铜币
 	
 	if(rowid== 0)then
 		Stone.AddGossip(player, item, menuid)
