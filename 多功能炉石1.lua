@@ -233,23 +233,32 @@ local Stone={
 		return days.."天"..hours.."时"..mins.."分"
 	end,
 	GoHome=function(player)--穿越回去
-		player:CastSpell(player,8690,true)	
+		player:CastSpell(player,8690,true)
+		--[[
+		player:SendBroadcastMessage("1")
+		local curSpell = player:GetCurrentSpell(1)
+		if(curSpell==nil) then
+			player:SendBroadcastMessage("err:没找到法术"..GetCurrTime())
+		end
+		curSpell:Finish()
+		--..curSpell:GetCastTime()
+		]]
 		player:ResetSpellCooldown(8690, true)	
 		player:SendBroadcastMessage("你回到家了。")
 	end,
 	
 	GoGMIsland=function(player)--新手装备
-		local v = {TP, "GM之岛",			1, 16222.1,		16252.1,	12.5872,	0}
+		local v = {TP, "GM之岛",1, 16222.1,16252.1,12.5872,0}
 		local map,mapid,x,y,z,o=v[2],v[3],v[4], v[5], v[6],v[7] or 0
-				local pname=player:GetName()--得到玩家名
-				if(player:Teleport(mapid,x,y,z,o,TELE_TO_GM_MODE))then--传送
-					Nplayer=GetPlayerByName(pname)--根据玩家名得到玩家
-					if(Nplayer)then
-						Nplayer:SendBroadcastMessage("已经到达 "..map)
-					end
-				else
-					print(">>Eluna Error: Teleport Stone : Teleport To "..mapid)
-				end
+		local pname=player:GetName()--得到玩家名
+		if(player:Teleport(mapid,x,y,z,o,TELE_TO_GM_MODE))then--传送
+			Nplayer=GetPlayerByName(pname)--根据玩家名得到玩家
+			if(Nplayer)then
+				Nplayer:SendBroadcastMessage("已经到达 "..map)
+			end
+		else
+			print(">>Eluna Error: Teleport Stone : Teleport To "..mapid)
+		end
 	end,
 
 	GoArena=function(player)
@@ -663,7 +672,8 @@ local Menu={
 	},
 
 	[TPMENU+0xa0]={--风景传送
-		{TP, "GM之岛",			1, 16222.1,		16252.1,	12.5872,	0},
+		{TP, "GM之岛",			1, 16222.1,16252.1,12.5872,0},
+		{TP, "PM之岛",			451, 16220.0,16107.7,69.5,0},
 		{TP, "时光之穴",		1,-8173.93018,	-4737.46387,33.77735,	0},
 		{TP, "双塔山",			1,-3331.35327,	2225.72827,	30.9877,	0},
 		{TP, "梦境之树",		1,-2914.7561,	1902.19934,	34.74103,	0},
@@ -1072,7 +1082,7 @@ function Stone.SelectGossip(event, player, item, sender, intid, code, menu_id)
 	local rowid	=intid-menuid*0x100		--第几项
 
 	--设置菜单使用金额//todo:改成各自价格
-	local TP_FEE = 0--10000 --单位铜币
+	local TP_FEE = 10--10000 --单位铜币
 	
 	if(rowid== 0)then
 		Stone.AddGossip(player, item, menuid)
