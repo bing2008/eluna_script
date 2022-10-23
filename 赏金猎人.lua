@@ -1,14 +1,57 @@
 --[==[
+-- vmangos
+INSERT INTO `creature_template` (`entry`, `patch`, `display_id1`, `display_id2`, `display_id3`
+	, `display_id4`, `name`, `subname`, `gossip_menu_id`, `level_min`
+	, `level_max`, `faction`, `npc_flags`, `speed_walk`, `speed_run`
+	, `display_scale1`, `detection_range`, `call_for_help_range`, `leash_range`, `rank`
+	, `xp_multiplier`, `damage_school`, `damage_multiplier`, `base_attack_time`, `ranged_attack_time`
+	, `unit_class`, `unit_flags`, `pet_family`, `trainer_type`, `trainer_spell`
+	, `trainer_class`, `trainer_race`, `type`, `type_flags`, `loot_id`
+	, `pickpocket_loot_id`, `skinning_loot_id`, `holy_res`, `fire_res`, `nature_res`
+	, `frost_res`, `shadow_res`, `arcane_res`, `spell_id1`, `spell_id2`
+	, `spell_id3`, `spell_id4`, `spell_list_id`, `pet_spell_list_id`, `gold_min`
+	, `gold_max`, `ai_name`, `movement_type`, `inhabit_type`, `civilian`
+	, `racial_leader`, `regeneration`, `equipment_id`, `trainer_id`, `vendor_id`
+	, `mechanic_immune_mask`, `school_immune_mask`, `flags_extra`, `script_name`)
+VALUES ('70004', '0', '11121', '0', '0'
+	, '0', 'èµé‡‘çŒæ‰‹', 'ä»‡æ¨ç»ˆç»“è€…', '0', '55'
+	, '55', '35', '1', '1.1', '1.14286'
+	, '0.1', '20', '5', '0', '0'
+	, '1', '0', '1', '2000', '2000'
+	, '8', '32768', '0', '0', '0'
+	, '0', '0', '7', '0', '0'
+	, '0', '0', '0', '0', '0'
+	, '0', '0', '0', '0', '0'
+	, '0', '0', '0', '0', '0'
+	, '0', '', '0', '3', '0'
+	, '0', '3', '0', '0', '0'
+	, '0', '0', '0', '');
+
+
+SET FOREIGN_KEY_CHECKS=0;
+
+-- ----------------------------
+-- Table structure for character_bounty
+-- ----------------------------
+DROP TABLE IF EXISTS `character_bounty`;
+CREATE TABLE `character_bounty` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `bounty_name` char(100) NOT NULL DEFAULT '',
+  `hunter_name` char(100) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
 ]==]
 
---Include sc_default
---require "base/sc_default"
+-- Include sc_default
+require "base/sc_default"
 
 local BountyHunter = {}
 
 BountyHunter.Settings = {
     Name = "|CFF18E7BD[BountyHunter]|r",
-    NpcEntry = 90059,
+    NpcEntry = 70004,
     BountyMoney = 100000,
     HunterMinLevel = 60,
     BountyMinLevel = 60,
@@ -20,11 +63,11 @@ function BountyHunter.OnGossipHello(event, player, unit)
     local PlayerName = player:GetName()
 
     if PlayerLevel < BountyHunter.Settings.HunterMinLevel then
-        player:GossipSetText(string.format("ÄãºÃ %s ÄãĞèÒª´ïµ½¼¶±ğ %s", PlayerName, BountyHunter.Settings.HunterMinLevel))
+        player:GossipSetText(string.format("ä½ å¥½ %s ä½ éœ€è¦è¾¾åˆ°çº§åˆ« %s", PlayerName, BountyHunter.Settings.HunterMinLevel))
     else
-        player:GossipMenuAddItem(0, "ĞüÉÍ "..BountyHunter.Settings.BountyMoney.." Í­±Ò»÷É±Ä³ÈË£¬ÇëÔÚµ¯³ö¿òÊäÈëÄãµÄ³ğÈË", 1, 1, true, nil)
-        player:GossipMenuAddItem(0, "ĞüÉÍÁĞ±í", 0, 2)
-        player:GossipSetText(string.format("ÄãºÃ %s", PlayerName))
+        player:GossipMenuAddItem(0, "æ‚¬èµ "..BountyHunter.Settings.BountyMoney.." é“œå¸å‡»æ€æŸäººï¼Œè¯·åœ¨å¼¹å‡ºæ¡†è¾“å…¥ä½ çš„ä»‡äºº", 1, 1, true, nil)
+        player:GossipMenuAddItem(0, "æ‚¬èµåˆ—è¡¨", 0, 2)
+        player:GossipSetText(string.format("ä½ å¥½ %s", PlayerName))
     end
     player:GossipSendMenu(0x7FFFFFFF, unit)
 end
@@ -41,38 +84,38 @@ function BountyHunter.OnGossipSelect(event, player, unit, sender, intid, code)
         if Bounty and Bounty:GetLevel() >= BountyHunter.Settings.BountyMinLevel then
             print(Bounty:GetLevel())
             if BountyName == HunterName then
-                player:SendBroadcastMessage(string.format("%s Äã²»ÄÜĞüÉÍÄã×Ô¼º", BountyHunter.Settings.Name))
+                player:SendBroadcastMessage(string.format("%s ä½ ä¸èƒ½æ‚¬èµä½ è‡ªå·±", BountyHunter.Settings.Name))
                 player:GossipComplete()
             else
                 if result ~= nil and result1 ~= nil then
                     if BountyName == result1:GetString(1) then
-                        player:SendBroadcastMessage(string.format("%s On |CFFFF0000%s|r ÒÑ¾­±»ĞüÉÍ", BountyHunter.Settings.Name, BountyName))
+                        player:SendBroadcastMessage(string.format("%s On |CFFFF0000%s|r å·²ç»è¢«æ‚¬èµ", BountyHunter.Settings.Name, BountyName))
                         player:GossipComplete()
                     else
                         if player:GetCoinage() >= BountyHunter.Settings.BountyMoney then
-                            player:SendBroadcastMessage(string.format("%s ÉèÖÃĞüÉÍ»÷É± |CFFFF0000%s|r", BountyHunter.Settings.Name, BountyName))
+                            player:SendBroadcastMessage(string.format("%s è®¾ç½®æ‚¬èµå‡»æ€ |CFFFF0000%s|r", BountyHunter.Settings.Name, BountyName))
                             CharDBQuery(string.format("INSERT INTO `character_bounty` (`bounty_name`, `hunter_name`) VALUES('%s','%s')", BountyName, HunterName))
-                            Bounty:SendBroadcastMessage(string.format("%s |CFFFF0000%s|r ÉèÖÃÉÍ½ğ»÷É±Äã", BountyHunter.Settings.Name, HunterName))
+                            Bounty:SendBroadcastMessage(string.format("%s |CFFFF0000%s|r è®¾ç½®èµé‡‘å‡»æ€ä½ ", BountyHunter.Settings.Name, HunterName))
                             player:ModifyMoney(-BountyHunter.Settings.BountyMoney)
                             player:GossipComplete()
                         else
-                            player:SendBroadcastMessage(string.format("%s ÄãÃ»ÓĞ×ã¹»µÄ½ğ±Ò", BountyHunter.Settings.Name))
+                            player:SendBroadcastMessage(string.format("%s ä½ æ²¡æœ‰è¶³å¤Ÿçš„é‡‘å¸", BountyHunter.Settings.Name))
                         end
                     end
                 else
                     if player:GetCoinage() >= BountyHunter.Settings.BountyMoney then
                         player:SendBroadcastMessage(string.format("%s Set a bounty on |CFFFF0000%s|r", BountyHunter.Settings.Name, BountyName))
-                        CharDBQuery(string.format("INSERT INTO `character_bounty` `bounty_name`, `hunter_name` VALUES('%s','%s')", BountyName, HunterName))
-                        Bounty:SendBroadcastMessage(string.format("%s |CFFFF0000%s|r ÉèÖÃÉÍ½ğ»÷É±Äã", BountyHunter.Settings.Name, HunterName))
+                        CharDBQuery(string.format("INSERT INTO `character_bounty` (`bounty_name`, `hunter_name`) VALUES('%s','%s')", BountyName, HunterName))
+                        Bounty:SendBroadcastMessage(string.format("%s |CFFFF0000%s|r è®¾ç½®èµé‡‘å‡»æ€ä½ ", BountyHunter.Settings.Name, HunterName))
                         player:ModifyMoney(-BountyHunter.Settings.BountyMoney)
                         player:GossipComplete()
                     else
-                        player:SendBroadcastMessage(string.format("%s ÄãÃ»ÓĞ×ã¹»µÄ½ğ±Ò", BountyHunter.Settings.Name))
+                        player:SendBroadcastMessage(string.format("%s ä½ æ²¡æœ‰è¶³å¤Ÿçš„é‡‘å¸", BountyHunter.Settings.Name))
                     end 
                 end
             end
         else
-            player:SendBroadcastMessage(string.format("%s Player with name |CFFFF0000%s|r Ã»ÕÒµ½»òÕß¼¶±ğ²»¹» |CFFFF0000%s|r.", BountyHunter.Settings.Name, BountyName, BountyHunter.Settings.BountyMinLevel))
+            player:SendBroadcastMessage(string.format("%s Player with name |CFFFF0000%s|r æ²¡æ‰¾åˆ°æˆ–è€…çº§åˆ«ä¸å¤Ÿ |CFFFF0000%s|r.", BountyHunter.Settings.Name, BountyName, BountyHunter.Settings.BountyMinLevel))
             player:GossipComplete()
         end
     end
@@ -80,10 +123,10 @@ function BountyHunter.OnGossipSelect(event, player, unit, sender, intid, code)
     if (intid == 2) then
         if result ~= nil then
             repeat
-                player:SendBroadcastMessage(string.format("%s ĞüÉÍ: = |CFFFF0000%s|r  / ÁÔÊÖ: = |CFFFF0000%s|r", BountyHunter.Settings.Name, result:GetString(1), result:GetString(2)))
+                player:SendBroadcastMessage(string.format("%s æ‚¬èµ: = |CFFFF0000%s|r  / çŒæ‰‹: = |CFFFF0000%s|r", BountyHunter.Settings.Name, result:GetString(1), result:GetString(2)))
             until not result:NextRow()
         else
-            player:SendBroadcastMessage(string.format("%s Ã»ÓĞÕÒµ½ĞüÉÍ", BountyHunter.Settings.Name))
+            player:SendBroadcastMessage(string.format("%s æ²¡æœ‰æ‰¾åˆ°æ‚¬èµ", BountyHunter.Settings.Name))
         end
     end
     player:GossipComplete()
@@ -95,10 +138,10 @@ function BountyHunter.OnChatCommand(event, player, msg, _, lang)
     if (msg == BountyHunter.Settings.BountyCommand) then
         if result ~= nil then
             repeat
-                player:SendBroadcastMessage(string.format("%s ĞüÉÍ: = |CFFFF0000%s|r  / ÁÔÊÖ: = |CFFFF0000%s|r", BountyHunter.Settings.Name, result:GetString(1), result:GetString(2)))
+                player:SendBroadcastMessage(string.format("%s æ‚¬èµ: = |CFFFF0000%s|r  / çŒæ‰‹: = |CFFFF0000%s|r", BountyHunter.Settings.Name, result:GetString(1), result:GetString(2)))
             until not result:NextRow()
         else
-            player:SendBroadcastMessage(string.format("%s Ã»ÓĞÕÒµ½ĞüÉÍ", BountyHunter.Settings.Name))
+            player:SendBroadcastMessage(string.format("%s æ²¡æœ‰æ‰¾åˆ°æ‚¬èµ", BountyHunter.Settings.Name))
         end
         return false
    end
@@ -110,8 +153,8 @@ function BountyHunter.OnPlayerKill(event, killer, killed)
  
     if result ~= nil then
         if BountyName == result:GetString(1) then
-            killed:SendBroadcastMessage(string.format("%s Äã´ÓĞüÉÍÁĞ±íÒÆ³ı", BountyHunter.Settings.Name))
-            killer:SendBroadcastMessage(string.format("%s ÔÚ |CFFFF0000%s|r ÊÇÒ»¸öĞüÉÍ£¬ Äã»ñµÃ |CFFFF0000%s|r Í­±Ò", BountyHunter.Settings.Name, BountyName, BountyHunter.Settings.BountyMoney))
+            killed:SendBroadcastMessage(string.format("%s ä½ ä»æ‚¬èµåˆ—è¡¨ç§»é™¤", BountyHunter.Settings.Name))
+            killer:SendBroadcastMessage(string.format("%s åœ¨ |CFFFF0000%s|r æ˜¯ä¸€ä¸ªæ‚¬èµï¼Œ ä½ è·å¾— |CFFFF0000%s|r é“œå¸", BountyHunter.Settings.Name, BountyName, BountyHunter.Settings.BountyMoney))
             CharDBQuery(string.format("DELETE FROM `character_bounty` WHERE bounty_name = '%s'", BountyName))
             killer:ModifyMoney(BountyHunter.Settings.BountyMoney)
         end
