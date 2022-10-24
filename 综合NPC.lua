@@ -9,6 +9,36 @@
 	
 -- vmangos
 INSERT INTO `creature_template` (`entry`, `patch`, `display_id1`, `display_id2`, `display_id3`, `display_id4`, `name`, `subname`, `gossip_menu_id`, `level_min`, `level_max`, `health_min`, `health_max`, `mana_min`, `mana_max`, `armor`, `faction`, `npc_flags`, `speed_walk`, `speed_run`, `scale`, `detection_range`, `call_for_help_range`, `leash_range`, `rank`, `xp_multiplier`, `dmg_min`, `dmg_max`, `dmg_school`, `attack_power`, `dmg_multiplier`, `base_attack_time`, `ranged_attack_time`, `unit_class`, `unit_flags`, `dynamic_flags`, `beast_family`, `trainer_type`, `trainer_spell`, `trainer_class`, `trainer_race`, `ranged_dmg_min`, `ranged_dmg_max`, `ranged_attack_power`, `type`, `type_flags`, `loot_id`, `pickpocket_loot_id`, `skinning_loot_id`, `holy_res`, `fire_res`, `nature_res`, `frost_res`, `shadow_res`, `arcane_res`, `spell_id1`, `spell_id2`, `spell_id3`, `spell_id4`, `spell_list_id`, `pet_spell_list_id`, `gold_min`, `gold_max`, `ai_name`, `movement_type`, `inhabit_type`, `civilian`, `racial_leader`, `regeneration`, `equipment_id`, `trainer_id`, `vendor_id`, `mechanic_immune_mask`, `school_immune_mask`, `flags_extra`, `script_name`) VALUES ('70001', '0', '11121', '0', '0', '0', '综合服务商人', '提供一切服务', '0', '55', '55', '1500', '1500', '5013', '5013', '1644', '35', '1', '1.1', '1.14286', '0.1', '20', '5', '0', '0', '1', '316', '316', '0', '248', '1', '2000', '2000', '8', '32768', '0', '0', '0', '0', '0', '0', '0', '0', '0', '7', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '', '0', '3', '0', '0', '3', '0', '0', '0', '0', '0', '0', '');	
+
+
+-- vmangos v21
+INSERT INTO `creature_template` (`entry`, `patch`, `display_id1`, `display_id2`, `display_id3`
+	, `display_id4`, `name`, `subname`, `gossip_menu_id`, `level_min`
+	, `level_max`, `faction`, `npc_flags`, `speed_walk`, `speed_run`
+	, `display_scale1`, `detection_range`, `call_for_help_range`, `leash_range`, `rank`
+	, `xp_multiplier`, `damage_school`, `damage_multiplier`, `base_attack_time`, `ranged_attack_time`
+	, `unit_class`, `unit_flags`, `pet_family`, `trainer_type`, `trainer_spell`
+	, `trainer_class`, `trainer_race`, `type`, `type_flags`, `loot_id`
+	, `pickpocket_loot_id`, `skinning_loot_id`, `holy_res`, `fire_res`, `nature_res`
+	, `frost_res`, `shadow_res`, `arcane_res`, `spell_id1`, `spell_id2`
+	, `spell_id3`, `spell_id4`, `spell_list_id`, `pet_spell_list_id`, `gold_min`
+	, `gold_max`, `ai_name`, `movement_type`, `inhabit_type`, `civilian`
+	, `racial_leader`, `regeneration`, `equipment_id`, `trainer_id`, `vendor_id`
+	, `mechanic_immune_mask`, `school_immune_mask`, `flags_extra`, `script_name`)
+VALUES ('70001', '0', '11121', '0', '0'
+	, '0', '综合服务商人', '提供一切服务', '0', '55'
+	, '55', '35', '1', '1.1', '1.14286'
+	, '0.1', '20', '5', '0', '0'
+	, '1', '0', '1', '2000', '2000'
+	, '8', '32768', '0', '0', '0'
+	, '0', '0', '7', '0', '0'
+	, '0', '0', '0', '0', '0'
+	, '0', '0', '0', '0', '0'
+	, '0', '0', '0', '0', '0'
+	, '0', '', '0', '3', '0'
+	, '0', '3', '0', '0', '0'
+	, '0', '0', '0', '');
+
 	
 ]]--
 print(">>Script: TeleportStone loading...OK")
