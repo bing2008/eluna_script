@@ -59,6 +59,7 @@ RegisterPlayerEvent(18, Chat)
 --RegisterPlayerEvent(42,Chat)
 
 -- 让闪金镇的马克能够对话
+-- 先修改马克的 creature_template.npc_flags = 2+1(3) 才能有对话菜单
 local creatureEntry = 795
 local function OnGossipHello(event, player, unit)
     player:GossipMenuAddItem(0, "Test Weather", 1, 1)
@@ -82,3 +83,61 @@ end
 
 RegisterCreatureGossipEvent(creatureEntry, 1, OnGossipHello)
 RegisterCreatureGossipEvent(creatureEntry, 2, OnGossipSelect)
+
+
+
+--让闪金镇的布尔797有boss技能 癞皮狼525 暴风城卫兵1423 
+local npcId = 525
+local Therer = {}
+
+function Therer.OnEnterCombat(event, creature, target)
+    creature:RegisterEvent(Therer.ArcaneBolt, 12000, 0)
+    creature:RegisterEvent(Therer.DrainLife, 7500, 0)
+    creature:RegisterEvent(Therer.DigestiveAcid, 18000, 0)
+    creature:RegisterEvent(Therer.ArcaneExplode, 15000, 0)
+
+end
+
+function Therer.OnLeaveCombat(event, creature)
+    creature:SendUnitYell("Didn't even stand a chance", 0)
+    creature:CastSpell(creature, 36393, true)
+    creature:RemoveEvents()
+end
+
+function Therer.OnDied(event, creature, killer)
+    if (killer:GetObjectType() == "Player") then
+        killer:SendBroadcastMessage("You killed " .. creature:GetName() .. "!")
+    end
+    creature:RemoveEvents()
+end
+
+--奥数爆炸
+function Therer.ArcaneExplode(event, dely, calls, creature)
+    local TARGET3 = creature:GetAITarget(4, true, 0, 45)
+    creature:CastSpell(TARGET3, 34656, true)
+	creature:SendUnitYell("奥数爆炸！", 0)
+end
+
+--奥术箭
+function Therer.ArcaneBolt(event, dely, calls, creature)
+    local TARGET2 = creature:GetAITarget(4, true, 0, 45)
+    creature:CastSpell(TARGET2, 58456, true)
+	creature:SendUnitYell("奥术箭！", 0)
+end
+
+--吸取生命
+function Therer.DrainLife(event, dely, calls, creature)
+    creature:CastSpell(creature:GetVictim(), 17620, false)
+	creature:SendUnitYell("吸取生命！", 0)
+end
+
+--消化酸液
+function Therer.DigestiveAcid(event, dely, calls, creature)
+    local TARGET1 = creature:GetAITarget(1, true, 0, 45)
+    creature:CastSpell(TARGET1, 26476, true)
+	creature:SendUnitYell("消化酸液！", 0)
+end
+
+RegisterCreatureEvent(npcId, 1, Therer.OnEnterCombat)
+RegisterCreatureEvent(npcId, 2, Therer.OnLeaveCombat)
+RegisterCreatureEvent(npcId, 4, Therer.OnDied)
