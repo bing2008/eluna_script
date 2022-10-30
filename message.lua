@@ -98,6 +98,8 @@ local function Loot_money1(event, player, amount)
        local plv = player:GetLevel()
        local z2 = player:GetZoneId()
 
+		--print("zone:".. z2 .. " level:".. plv)
+
 		if (Zones1[z2] == nil) then
         SendWorldMessage(""..head1.."请问我在哪，我是谁，我在做什么。。。|r")
         else
@@ -737,7 +739,7 @@ local function Money_Change1(event, player)
 			local item = player:GetItemByPos( 255, slot )
 				if item then 
 					if (item:GetQuality()>2) and (item:IsSoulBound()==false) then
-					local itk = item:GetItemLink()
+					local itk = item:GetItemLink(4)
 					local m6 = math.random(500)
 						if (m6 == 1) then
 						SendWorldMessage(""..head4.."有要"..itk..""..itk.."|cffffc0c0的没，速度了，太低了不回！！！|r")
