@@ -1082,7 +1082,7 @@ function Stone.SelectGossip(event, player, item, sender, intid, code, menu_id)
 	local rowid	=intid-menuid*0x100		--第几项
 
 	--设置菜单使用金额//todo:改成各自价格
-	local TP_FEE = 10--10000 --单位铜币
+
 	
 	if(rowid== 0)then
 		Stone.AddGossip(player, item, menuid)
@@ -1103,7 +1103,8 @@ function Stone.SelectGossip(event, player, item, sender, intid, code, menu_id)
 				local spellId,equipId=v[3],v[4]
 				Enchanting(player, spellId, equipId, 0)
 				Stone.AddGossip(player, item, menuid)
-			elseif(mtype==TP)then					--传送
+			elseif(mtype==TP)then	--传送
+				local TP_FEE = 10000 --单位铜币			
 				local map,mapid,x,y,z,o=v[2],v[3],v[4], v[5], v[6],v[7] or 0
 				local pname=player:GetName()--得到玩家名
 				local curMoney = player:GetCoinage()
