@@ -54,6 +54,10 @@ local function Chat (event, player, message, type, language)
 		player:SendBroadcastMessage("player:"..player:GetName().." killed")
 
 	end
+	if(message == "aura") then
+		local spellID = 16609
+		player:AddAura(spellID,player)
+	end
 end
 RegisterPlayerEvent(18, Chat)
 --RegisterPlayerEvent(42,Chat)
