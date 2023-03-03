@@ -1479,6 +1479,7 @@ local function KilledCreature(event, player, enemy)
     SendWorldMessage("|cffcc0000[PVE]|cffff9900 |Hplayer:"..player:GetName().."|h["..player:GetName().."]|h|r |cffcc0000"..participants.."使用了: "..ktime.." 秒)|杀死了 ["..enemy:GetName().."] |r")
 end
 local function EnterCombat(event, player, enemy)
+    if(enemy == nil) then return end
     if(not enemy:IsWorldBoss()) then return end 
     local pguid, cguid = player:GetGUIDLow(), enemy:GetGUIDLow()
    
