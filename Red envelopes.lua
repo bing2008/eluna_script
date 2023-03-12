@@ -3,7 +3,7 @@ local itemcd = 50000 --物品ID
 local systemname = '红包系统' --功能名称
 local people_num = 5 --红包默认可抢的人数
 local Fname = '|cFF1BE6B8[' .. systemname .. ']|r' --广播前缀
-local senditem = 22528 --可发货币
+local senditem = 22528 --可发货币--暂用黑铁碎片
 local minItemCount = 10 --最少发送货币数量
 local minMoney = 10 --最少发送金币数量 单位金
 local Levelexp = {5, 1}
@@ -19,6 +19,7 @@ local level = {
 
 local playerinfo = {}
 local rediteminfo = {}
+local redSendingDic = {}
 local Maxid = 0
 CharDBExecute(
     [[
@@ -40,6 +41,7 @@ CharDBExecute(
             `itemid` int(11) NOT NULL DEFAULT '0',
             `nums` int(11) NOT NULL DEFAULT '0',
             `fenpei` text,
+            `redCount` int(11) NOT NULL DEFAULT '0',
             PRIMARY KEY (`id`)
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ]]
@@ -54,7 +56,7 @@ if (text) then
         }
     until not text:NextRow()
 end
-text = CharDBQuery('select id,Remarks,guild,yue,itemid,nums,fenpei from _player_red_list WHERE YX=1 order by id')
+text = CharDBQuery('select id,Remarks,guild,yue,itemid,nums,fenpei,redCount from _player_red_list WHERE YX=1 order by id')
 if (text) then
     repeat
         rediteminfo[tonumber(text:GetString(0))] = {
@@ -64,7 +66,8 @@ if (text) then
             ['itemid'] = tonumber(text:GetString(4)),
             ['nums'] = tonumber(text:GetString(5)),
             ['id'] = tonumber(text:GetString(0)),
-            ['fenpei'] = text:GetString(6)
+            ['fenpei'] = text:GetString(6),
+            ['redCount'] = tonumber(text:GetString(7))
         }
     until not text:NextRow()
 end
@@ -118,9 +121,9 @@ function StrSplit(str, reps)
     return StrList
 end
 function CheckRight(playerid, intid, player)
-    if rediteminfo[intid]['yue'] == 5 then
+    if rediteminfo[intid]['yue'] == rediteminfo[intid]['redCount'] then
         rediteminfo[intid]['Remarks'] = tostring(playerid)
-        rediteminfo[intid]['yue'] = 4
+        rediteminfo[intid]['yue'] = rediteminfo[intid]['yue']-1
         Updateredinfo(rediteminfo[intid]['id'], rediteminfo[intid]['yue'], rediteminfo[intid]['Remarks'], player)
         return true
     end
@@ -136,8 +139,10 @@ function CheckRight(playerid, intid, player)
     Updateredinfo(rediteminfo[intid]['id'], rediteminfo[intid]['yue'], rediteminfo[intid]['Remarks'], player)
     return true
 end
+
+--判断是否已经领过此红包
 function CheckLeft(playerid, intid)
-    if rediteminfo[intid]['yue'] == 5 then
+    if rediteminfo[intid]['yue'] == rediteminfo[intid]['redCount'] then
         return true
     end
     local list = StrSplit(rediteminfo[intid]['Remarks'], '|')
@@ -184,23 +189,35 @@ function Updateinfo(guid, name, exp, item_id, guild, itemcount)
         CharDBQuery('update _player_Red set exp=' .. playerinfo[guid][2] .. ' where guid=' .. guid)
     end
     math.randomseed(tostring(os.time()):reverse():sub(1, 6))
-    local data = splitX(tonumber(itemcount), people_num)
+
+    --获取当前红包数据
+    local redSending = redSendingDic[guid]
+    if redSending == nil then
+        print("Red Envelopers error:".."Updateinfo")
+    end
+
+    local data = splitX(tonumber(itemcount), redSending.redCount)
     CharDBQuery(
-        "INSERT INTO `_player_red_list` (`guild`,`itemid`,`nums`,`yue`,`fenpei`) VALUES ('" ..
-            guild .. "','" .. item_id .. "','" .. itemcount .. "','" .. people_num .. "','" .. data .. "')"
+        "INSERT INTO `_player_red_list` (`guild`,`itemid`,`nums`,`yue`,`fenpei`,`redCount`) VALUES ('" ..
+            guild .. "','" .. item_id .. "','" .. itemcount .. "','" .. redSending.redCount .. "','" .. data .. "','" .. redSending.redCount .. "')"
     )
     rediteminfo[Maxid] = {
         ['Remarks'] = '',
         ['guild'] = guild,
-        ['yue'] = people_num,
+        ['yue'] = redSending.redCount,--红包数量
         ['itemid'] = item_id,
-        ['nums'] = itemcount,
+        ['nums'] = itemcount,         --总金额、数量
         ['id'] = Maxid,
-        ['fenpei'] = data
+        ['fenpei'] = data,
+        ['redCount'] = redSending.redCount
     }
     Maxid = Maxid + 1
+
+    redSendingDic[guid] = nil
 end
-function Red_Select(event, player, item, sender, intid, code)
+
+function Red_Select(event, player, item, sender, intid, code, menu_id)
+    print(string.format("event:%s player:%s object:%s sender:%s intid:%s code:%s menu_id:%s", event,  tostring(player:GetGUIDLow()), tostring(item), tostring(sender), intid, code, menu_id))
     if intid == 1 or intid == 21 then
         player:SendAreaTriggerMessage(Fname .. '土豪，发个红包，我们就是朋友啦')
         player:SendBroadcastMessage(Fname .. '土豪，发个红包，我们就是朋友啦')
@@ -238,7 +255,7 @@ function Red_Select(event, player, item, sender, intid, code)
             return true
         end
         Guild = player:GetGuildId()
-        local jz = false
+        local jz = false --is red vailable?
         local nums = 0
         for i, v in pairs(keys) do
             if rediteminfo[v]['guild'] > 0 then
@@ -326,25 +343,80 @@ function Red_Select(event, player, item, sender, intid, code)
         )
         player:GossipSendMenu(1, item)
     elseif intid == 2 then
-        player:GossipMenuAddItem(6, '|cFFFF0000' .. GetItemLink(senditem) .. '红包雨-所有人可见|r',0,22,true)
-        player:GossipMenuAddItem(6, '|cFFFF0000' .. GetItemLink(senditem) .. '工会红包|r',0,23,true)
-        player:GossipMenuAddItem(6, '|cFFFF0000金币红包雨-所有人可见|r',0,24,true)
-        player:GossipMenuAddItem(6, '|cFFFF0000金币-工会红包|r',0,25,true)
+        player:GossipMenuAddItem(6, '|cFFFF0000' .. GetItemLink(senditem) .. '红包雨-所有人可见|r',0,22)
+        player:GossipMenuAddItem(6, '|cFFFF0000' .. GetItemLink(senditem) .. '工会红包|r',0,23)
+        player:GossipMenuAddItem(6, '|cFFFF0000金币红包雨-所有人可见|r',0,24)
+        player:GossipMenuAddItem(6, '|cFFFF0000金币-工会红包|r',0,25)
         player:GossipMenuAddItem(6, '|cFF000000返回主菜单|r',0,99)
         player:GossipSendMenu(1, item)
     elseif intid == 99 then
         Red_Menu(item, player)
     elseif intid == 22 or intid == 23 or intid == 24 or intid == 25 then
+        --存储当前红包数据
+        local redSending = redSendingDic[player:GetGUIDLow()]
+        if redSending == nil then
+            redSending = {type=intid,redCount=0,totalCount=0}
+            redSendingDic[player:GetGUIDLow()] = redSending;
+        else
+            redSending.type = intid
+            redSending.redCount = 0
+            redSending.totalCount = 0
+        end
+        
+        if (intid == 23 or intid == 25) then
+            if not player:IsInGuild() then
+                player:SendBroadcastMessage(Fname .. '请您先加入一个工会！')
+                player:GossipComplete()
+                return true
+            end
+        end
+
+        player:GossipMenuAddItem(6, '|cFFFF0000要发多少个红包？|r',0,201,true)
+        player:GossipSendMenu(1, item)
+
+    elseif intid == 201 then
+        --获取当前红包数据
+        local redSending = redSendingDic[player:GetGUIDLow()]
+        if redSending == nil then
+            print("Red Envelopers error:"..intid)
+        end
+        local redCount = tonumber(code)
+        if (redCount == nil) then
+            player:SendBroadcastMessage(Fname .. '请输入正确的红包个数！')
+            player:GossipComplete()
+            return true
+        elseif(redCount<people_num) then
+            player:SendBroadcastMessage(Fname .. '最少要发'..people_num..'个红包！')
+            player:GossipComplete()
+            return true
+        end
+
+        redSending.redCount = redCount;
+
+        player:GossipMenuAddItem(6, '|cFFFF0000总共要发多少钱/数量？|r',0,202,true)
+        player:GossipSendMenu(1, item)
+
+    elseif intid == 202 then
+        --获取当前红包数据
+        local redSending = redSendingDic[player:GetGUIDLow()]
+        if redSending == nil then
+            print("Red Envelopers error:"..intid)
+        end
+        local redType = redSending.type
+
         local itemcount = tonumber(code)
         if (itemcount == nil) then
             player:SendBroadcastMessage(Fname .. '请输入正确的数字！')
             player:GossipComplete()
             return true
         end
+
+        redSending.totalCount = itemcount
+
         local Worldmessagestr = ''
         local Kind = ''
         local Guild = 0
-        if (intid == 23 or intid == 25) then
+        if (redType == 23 or redType == 25) then
             if not player:IsInGuild() then
                 player:SendBroadcastMessage(Fname .. '请您先加入一个工会！')
                 player:GossipComplete()
@@ -356,7 +428,7 @@ function Red_Select(event, player, item, sender, intid, code)
         local m = false
         local playerexp = 50
 
-        if (intid == 22 or intid == 23) then
+        if (redType == 22 or redType == 23) then
             if (minItemCount > itemcount) then
                 player:SendBroadcastMessage(
                     Fname .. '土豪，红包最少需要发送' .. minItemCount .. '个' .. GetItemLink(senditem) .. '哦！'
@@ -396,30 +468,30 @@ function Red_Select(event, player, item, sender, intid, code)
             Worldmessagestr =
                 Fname ..
                 '|cFFCC6633壕|r|cFF665499无|r|cFF0041FF人|r|cFF0E94DC性|r|cFF1BE6B8的|r[' ..
-                    Get_levelName(playerexp) ..
-                        '-' ..
-                            player:GetName() ..
-                                ']|cFFFF0000发|r|cFFAA1655送|r|cFF552BAA了|r|cFF0041FF一|r|cFF0978E7个|r|cFF12AFD0金|r|cFF1BE6B8币|r|cFFFFFF00x|r|cFF00FF99' ..
-                                    itemcount ..
-                                        '|r|cFF8C5555的|r' ..
-                                            Kind ..
-                                                '|cFFFFDF48红|r|cFFFEBF90包|r|cFFFE9FD8，|r|cFFB4AA90哇|r|cFF69B448塞|r|cFF1FBF00，|r|cFF619D3A这|r|cFFA37C75个|r|cFFE55AAF工|r|cFFCA6EA7会|r|cFFAF819E好|r|cFF949596多|r|cFF8CA3B4土|r|cFF85B0D3豪|r|cFF7DBEF1，|r|cFF589FB8我|r|cFF34807E要|r|cFF0F6145入|r|cFF24723F会|r|cFF388338！|r'
+                Get_levelName(playerexp) ..
+                '-' ..
+                player:GetName() ..
+                ']|cFFFF0000发|r|cFFAA1655送|r|cFF552BAA了|r|cFF0041FF一|r|cFF0978E7个|r|cFF12AFD0金|r|cFF1BE6B8币|r|cFFFFFF00x|r|cFF00FF99' ..
+                itemcount ..
+                '|r|cFF8C5555的|r' ..
+                Kind ..
+                '|cFFFFDF48红|r|cFFFEBF90包|r|cFFFE9FD8，|r|cFFB4AA90哇|r|cFF69B448塞|r|cFF1FBF00，|r|cFF619D3A这|r|cFFA37C75个|r|cFFE55AAF工|r|cFFCA6EA7会|r|cFFAF819E好|r|cFF949596多|r|cFF8CA3B4土|r|cFF85B0D3豪|r|cFF7DBEF1，|r|cFF589FB8我|r|cFF34807E要|r|cFF0F6145入|r|cFF24723F会|r|cFF388338！|r'
             p_exp = itemcount / minItemCount * Levelexp[2]
             Updateinfo(tonumber(tostring(player:GetGUID())), player:GetName(), p_exp, 0, Guild, itemcount)
         else
             Worldmessagestr =
                 Fname ..
                 '|cFFCC6633壕|r|cFF665499无|r|cFF0041FF人|r|cFF0E94DC性|r|cFF1BE6B8的|r[' ..
-                    Get_levelName(playerexp) ..
-                        '-' ..
-                            player:GetName() ..
-                                ']|cFFFF0000发|r|cFFF3030C送|r|cFFE80617了|r|cFFDC0923一|r|cFFD10C2E个|r' ..
-                                    GetItemLink(senditem) ..
-                                        '|cFFFFFF00x|r|cFF00FF99' ..
-                                            itemcount ..
-                                                '|r|cFF8B1E74的|r' ..
-                                                    Kind ..
-                                                        '|cFF7F2080红|r|cFF74238B包|r|cFF682697，|r|cFF5D29A2大|r|cFF512CAE家|r|cFF462FB9赶|r|cFF3A32C5紧|r|cFF2E35D1抢|r|cFF2338DC啦|r|cFF173BE8！|r'
+                Get_levelName(playerexp) ..
+                '-' ..
+                player:GetName() ..
+                ']|cFFFF0000发|r|cFFF3030C送|r|cFFE80617了|r|cFFDC0923一|r|cFFD10C2E个|r' ..
+                GetItemLink(senditem) ..
+                '|cFFFFFF00x|r|cFF00FF99' ..
+                itemcount ..
+                '|r|cFF8B1E74的|r' ..
+                Kind ..
+                '|cFF7F2080红|r|cFF74238B包|r|cFF682697，|r|cFF5D29A2大|r|cFF512CAE家|r|cFF462FB9赶|r|cFF3A32C5紧|r|cFF2E35D1抢|r|cFF2338DC啦|r|cFF173BE8！|r'
             p_exp = itemcount / minMoney * Levelexp[1]
             Updateinfo(tonumber(tostring(player:GetGUID())), player:GetName(), p_exp, senditem, Guild, itemcount)
         end
@@ -427,6 +499,9 @@ function Red_Select(event, player, item, sender, intid, code)
         player:SendBroadcastMessage(Fname .. '红包发送成功！')
         player:SendAreaTriggerMessage(Fname .. '红包发送成功！')
         SendWorldMessage(Worldmessagestr)
+
+        player:GossipComplete()
+        return true
     end
 end
 function shuffle(t)
