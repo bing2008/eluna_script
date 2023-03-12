@@ -1,11 +1,14 @@
 ---by ljq5555
 local itemcd = 50000 --物品ID
 local systemname = '红包系统' --功能名称
-local people_num = 5 --红包默认可抢的人数
+local people_num = 1 --红包最少可抢的人数
+local people_MaxNum = 100 --红包最大可抢的人数
 local Fname = '|cFF1BE6B8[' .. systemname .. ']|r' --广播前缀
 local senditem = 22528 --可发货币--暂用黑铁碎片
-local minItemCount = 10 --最少发送货币数量
-local minMoney = 10 --最少发送金币数量 单位金
+local minItemCount = 1 --最少发送物品数量
+local maxItemCount = 100--最多发送物品数量
+local minMoney = 1 --最少发送金币数量 单位金
+local maxMoney = 1000 --最多发送金币数量 单位金
 local Levelexp = {5, 1}
 local paihangbang = 10 --排行榜显示最大人数
 local minlevel = 8 --抢红包的最低等级
@@ -168,7 +171,7 @@ function Updateredinfo(id, yue, Remarks, player)
         player:ModifyMoney(y)
         player:SendBroadcastMessage(Fname .. '|cFFFF0000你抢到了一个红包获得|r' .. sendstr)
     else
-        sendstr = GetItemLink(rediteminfo[id]['itemid']) .. '|cFFFF0000X' .. y .. '个|r'
+        sendstr = GetItemLink(rediteminfo[id]['itemid'],4) .. '|cFFFF0000X' .. y .. '个|r'
         player:SendBroadcastMessage(Fname .. '|cFFFF0000你抢到了一个红包获得|r' .. sendstr)
         player:AddItem(rediteminfo[id]['itemid'], y)
     end
@@ -274,7 +277,7 @@ function Red_Select(event, player, item, sender, intid, code, menu_id)
             if jz and CheckLeft(player:GetGUID(), rediteminfo[v]['id']) then
                 if rediteminfo[v]['itemid'] > 0 then
                     player:GossipMenuAddItem(6, '|TInterface\\ICONS\\red\\read.blp:20|t ' ..
-                            GetItemLink(rediteminfo[v]['itemid']) ..
+                            GetItemLink(rediteminfo[v]['itemid'],4) ..
                                 'X' .. rediteminfo[v]['nums'] .. '     [' .. rediteminfo[v]['id'] .. ']',0,menucdadd + rediteminfo[v]['id']
                     )
                 else
@@ -343,8 +346,8 @@ function Red_Select(event, player, item, sender, intid, code, menu_id)
         )
         player:GossipSendMenu(1, item)
     elseif intid == 2 then
-        player:GossipMenuAddItem(6, '|cFFFF0000' .. GetItemLink(senditem) .. '红包雨-所有人可见|r',0,22)
-        player:GossipMenuAddItem(6, '|cFFFF0000' .. GetItemLink(senditem) .. '工会红包|r',0,23)
+        player:GossipMenuAddItem(6, '|cFFFF0000' .. GetItemLink(senditem,4) .. '红包雨-所有人可见|r',0,22)
+        player:GossipMenuAddItem(6, '|cFFFF0000' .. GetItemLink(senditem,4) .. '工会红包|r',0,23)
         player:GossipMenuAddItem(6, '|cFFFF0000金币红包雨-所有人可见|r',0,24)
         player:GossipMenuAddItem(6, '|cFFFF0000金币-工会红包|r',0,25)
         player:GossipMenuAddItem(6, '|cFF000000返回主菜单|r',0,99)
@@ -389,6 +392,10 @@ function Red_Select(event, player, item, sender, intid, code, menu_id)
             player:SendBroadcastMessage(Fname .. '最少要发'..people_num..'个红包！')
             player:GossipComplete()
             return true
+        elseif(redCount>people_MaxNum) then
+            player:SendBroadcastMessage(Fname .. '最大只能发'..people_MaxNum..'个红包！')
+            player:GossipComplete()
+            return true
         end
 
         redSending.redCount = redCount;
@@ -407,6 +414,10 @@ function Red_Select(event, player, item, sender, intid, code, menu_id)
         local itemcount = tonumber(code)
         if (itemcount == nil) then
             player:SendBroadcastMessage(Fname .. '请输入正确的数字！')
+            player:GossipComplete()
+            return true
+        elseif(itemcount < redSending.redCount) then
+            player:SendBroadcastMessage(Fname .. '总数量/金额要大于或等于红包数量！')
             player:GossipComplete()
             return true
         end
@@ -431,7 +442,13 @@ function Red_Select(event, player, item, sender, intid, code, menu_id)
         if (redType == 22 or redType == 23) then
             if (minItemCount > itemcount) then
                 player:SendBroadcastMessage(
-                    Fname .. '土豪，红包最少需要发送' .. minItemCount .. '个' .. GetItemLink(senditem) .. '哦！'
+                    Fname .. '土豪，红包最少需要发送' .. minItemCount .. '个' .. GetItemLink(senditem,4) .. '哦！'
+                )
+                player:GossipComplete()
+                return true
+            elseif(itemcount > maxItemCount) then
+                player:SendBroadcastMessage(
+                    Fname .. '土豪，红包最多只能发送' .. maxItemCount .. '个' .. GetItemLink(senditem,4) .. '哦！'
                 )
                 player:GossipComplete()
                 return true
@@ -439,17 +456,21 @@ function Red_Select(event, player, item, sender, intid, code, menu_id)
             if (player:HasItem(senditem, itemcount)) then
                 player:RemoveItem(senditem, itemcount)
                 player:SendBroadcastMessage(
-                    Fname .. '|cFF33CC33你失去了|r ' .. GetItemLink(senditem) .. ' |cFF33CC33x ' .. itemcount .. ' 个|r'
+                    Fname .. '|cFF33CC33你失去了|r ' .. GetItemLink(senditem,4) .. ' |cFF33CC33x ' .. itemcount .. ' 个|r'
                 )
             else
-                player:SendBroadcastMessage(Fname .. '对不起.你没有' .. GetItemLink(senditem) .. 'X' .. itemcount .. '.无法发红包')
+                player:SendBroadcastMessage(Fname .. '对不起.你没有' .. GetItemLink(senditem,4) .. 'X' .. itemcount .. '.无法发红包')
                 player:SendAreaTriggerMessage(
-                    Fname .. '对不起.你没有' .. GetItemLink(senditem) .. 'X' .. itemcount .. '.无法发红包'
+                    Fname .. '对不起.你没有' .. GetItemLink(senditem,4) .. 'X' .. itemcount .. '.无法发红包'
                 )
             end
         else
             if (minMoney > itemcount) then
                 player:SendBroadcastMessage(Fname .. '土豪，红包最少需要发送' .. minMoney .. '金币哦！')
+                player:GossipComplete()
+                return true
+            elseif(itemcount > maxMoney) then
+                player:SendBroadcastMessage(Fname .. '土豪，红包最多只能发送' .. minMoney .. '金币哦！')
                 player:GossipComplete()
                 return true
             end
@@ -486,7 +507,7 @@ function Red_Select(event, player, item, sender, intid, code, menu_id)
                 '-' ..
                 player:GetName() ..
                 ']|cFFFF0000发|r|cFFF3030C送|r|cFFE80617了|r|cFFDC0923一|r|cFFD10C2E个|r' ..
-                GetItemLink(senditem) ..
+                GetItemLink(senditem,4) ..
                 '|cFFFFFF00x|r|cFF00FF99' ..
                 itemcount ..
                 '|r|cFF8B1E74的|r' ..
@@ -516,6 +537,7 @@ function shuffle(t)
 end
 
 function splitX(m, n)
+    print("splitX:m="..m.." n="..n)
     local mark = {}
     for i = 1, m - 1 do
         mark[i] = i
@@ -525,6 +547,7 @@ function splitX(m, n)
     local validMark = {}
     for i = 1, n - 1 do
         validMark[i] = mark[i]
+        print("splitX:validMark[".. i .."]="..mark[i].."")
     end
 
     table.sort(
@@ -549,7 +572,7 @@ end
 function RedOnLogin(event, player)
     if not player:HasItem(itemcd, 1) then
         player:AddItem(itemcd, 1)
-        player:SendBroadcastMessage(Fname .. '|cFF33CC33你获得了|r ' .. GetItemLink(itemcd) .. ' |cFF33CC33x1个|r')
+        player:SendBroadcastMessage(Fname .. '|cFF33CC33你获得了|r ' .. GetItemLink(itemcd,4) .. ' |cFF33CC33x1个|r')
     end
     player:SendBroadcastMessage(
         '|cFFFF0066欢|r|cFF0041FF迎|r|cFF1BE6B8你|r' ..
