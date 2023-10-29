@@ -145,3 +145,18 @@ end
 RegisterCreatureEvent(npcId, 1, Therer.OnEnterCombat)
 RegisterCreatureEvent(npcId, 2, Therer.OnLeaveCombat)
 RegisterCreatureEvent(npcId, 4, Therer.OnDied)
+
+
+--test RegisterMapEvent
+local INSTANCE_EVENT_ON_PLAYER_ENTER = 4 -- (event, instance_data, map
+function MapEvent_PlayerEnterMap(event, instance_data, map, player)
+	player:SendBroadcastMessage("MapEvent:玩家:"..player:GetName().." 进入了死亡矿井。")
+end
+RegisterMapEvent( 36, INSTANCE_EVENT_ON_PLAYER_ENTER, MapEvent_PlayerEnterMap )
+
+-- only RegisterServerEvent works
+local MAP_EVENT_ON_PLAYER_ENTER = 21 -- (event, map, player)
+function ServerEvent_PlayerEnterMap(event, map, player)
+	player:SendBroadcastMessage("ServerEvent:玩家:"..player:GetName().." 进入了"..map:GetName())
+end
+RegisterServerEvent(MAP_EVENT_ON_PLAYER_ENTER, ServerEvent_PlayerEnterMap )
