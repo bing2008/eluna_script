@@ -157,6 +157,17 @@ RegisterMapEvent( 36, INSTANCE_EVENT_ON_PLAYER_ENTER, MapEvent_PlayerEnterMap )
 -- only RegisterServerEvent works
 local MAP_EVENT_ON_PLAYER_ENTER = 21 -- (event, map, player)
 function ServerEvent_PlayerEnterMap(event, map, player)
+	player:AddAura(22888, player)
 	player:SendBroadcastMessage("ServerEvent:玩家:"..player:GetName().." 进入了"..map:GetName())
 end
 RegisterServerEvent(MAP_EVENT_ON_PLAYER_ENTER, ServerEvent_PlayerEnterMap )
+
+
+--Test PLAYER_EVENT_ON_COMMAND. Type ".myCmd subcmd1" in console to test.
+--https://elunaluaengine.github.io/Global/RegisterPlayerEvent.html
+local PLAYER_EVENT_ON_COMMAND = 42 -- (event, player, command) - player is nil if command used from console. Can return false
+local function Player_Command(event,player,command)
+
+	player:SendBroadcastMessage("Player_Command:player:"..player:GetName().." input: "..command)
+end
+local isCancel = RegisterPlayerEvent( PLAYER_EVENT_ON_COMMAND, Player_Command )
